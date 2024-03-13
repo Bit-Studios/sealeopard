@@ -5,14 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SeaLeopard.System
+namespace SeaLeopard.System.Commands
 {
     public class Motd : Command
     {
         public override string Name { get; set; }
         public override string[] ValidArgs { get; set; }
         public override string[] Args { get; set; }
-        public override List<string> Errors { get; set ; }
+        public override List<string> Errors { get; set; }
 
         public class Instance : Command.Instance
         {
