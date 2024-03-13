@@ -21,7 +21,6 @@ namespace SeaLeopard
             SeaLeopardManager.appManager = new AppManager();
             Console.WriteLine("Loading SeaLeopard");
             SeaLeopardManager.terminal = (Terminal)appManager.GetApp("SLT");
-            appManager.StartApp("Motd", new object[] { "SLmotd" }, "SLmotd");
         }
 
         protected override void Run()

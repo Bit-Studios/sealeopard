@@ -1,15 +1,39 @@
-﻿using System;
+﻿using SeaLeopard.System.Commands;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
 
 namespace SeaLeopard.System
 {
+    public abstract class Command : IDisposable
+    {
+        public abstract class Instance
+        {
+            public abstract Command Create(string[] args);
+        }
+
+        public abstract int Run();
+
+        public void Dispose()
+        {
+
+        }
+        public abstract string Name
+        {
+            get; set;
+        }
+        public abstract string[] ValidArgs { get; set; }
+        public abstract string[] Args { get; set; }
+        public abstract List<string> Errors { get; set; }
+
+    }
+
+
     public class Terminal : App
     {
         public class Instance : App.Instance
         {
-            public override App Create(object[] args)
+            public override App Create(string[] args)
             {
                 return new Terminal(args[0].ToString());
             }
@@ -19,6 +43,7 @@ namespace SeaLeopard.System
         public List<string> Lines { get; set; }
         public List<string> History { get; set; }
         public override string Name {  get; set; }
+        public Dictionary<string, Command.Instance> Commands { get; set; }
         public int historyidx = -1;
         public Terminal(string name) { 
             Name = name;
@@ -26,8 +51,23 @@ namespace SeaLeopard.System
 
             //create load from user profile if logged in
             History = new List<string>();
+
+            Commands = new Dictionary<string,Command.Instance>();
+            LoadCommands();
         }
 
+        public void LoadCommands()
+        {
+            Commands = new Dictionary<string, Command.Instance>();
+
+            Commands.Add("process",new Process.Instance());
+            Commands.Add("motd", new Motd.Instance());
+        }
+        public void RunCommand(string name, string[] Args = null)
+        {
+            Command command = Commands[name].Create(Args);
+            int commandResult = command.Run();
+        }
         public void UpdateScreen()
         {
             Console.Clear();
@@ -94,66 +134,52 @@ namespace SeaLeopard.System
             
         }
 
+
+
+
+
+
         public override void Update()
         {
-            string input = Read();
-            Write($" > {input}");
-            History.Add(input);
-            string[] Args = input.Split(' ');
-            switch (Args[0].ToLower())
+            try
             {
-                case "start":
-                    try
+                string input = Read();
+                //Write($" > {input}");
+                History.Add(input);
+                string[] Args = input.Split(' ');
+                if (Commands.ContainsKey(Args[0].ToLower()))
+                {
+                    Command.Instance commandInstance = Commands[Args[0].ToLower()];
+                    Command command = commandInstance.Create(Args);
+                    if(command.Errors.Count > 0)
                     {
-                        App StartApp = SeaLeopardManager.appManager.StartApp(Args[1], Args, Args[2]);
-                        if (StartApp == null)
+                        command.Errors.ForEach(error =>
                         {
-                            Write($"Invalid App {Args[1]}");
-                        }
+                            SeaLeopardManager.terminal.Write($"{error}");
+                            
+                        });
+                        UpdateScreen();
                     }
-                    catch(Exception e)
+                    else
                     {
-                        Write($"Invalid Arguments {Args} \nStart <App> <Name (unique)>\nExample: Start Terminal Example_Terminal");
+                        command.Run();
+                        SeaLeopardManager.terminal.Write($"Debug: ran command");
+                        UpdateScreen();
                     }
-                    break;
-                case "process":
-                    try
-                    {
-                        switch (Args[1])
-                        {
-                            case "List":
-                                int idx = 0;
-                                Write($"Currently running processes");
-                                Write($"Process Name | App Name");
-                                SeaLeopardManager.appManager.apps.ToList().ForEach(app =>
-                                {
-                                    Write($"{app.Key} | {app.Value.GetType().Name}");
-                                    if(idx > 23)
-                                    {
-                                        InputMode = false;
-                                        Read("======== Press enter for more ========");
-                                    }
-                                    InputMode = true;
-                                });
-                                break;
-                            case "Stop":
-                                SeaLeopardManager.appManager.StopApp(Args[2]);
-                                break;
-                            default:
-
-                                break;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Write($"Invalid Arguments {Args} \nProcess List\nProcess Stop <Name>");
-                    }
-                    break;
-                default:
-                    Write($"Invalid command {Args[0]}");
-                    break;
+                    
+                }
+                else
+                {
+                    SeaLeopardManager.terminal.Write($"Invalid command {Args[0]}");
+                }
+                
+            }
+            catch(Exception ex)
+            {
+                Write($"Critical Error: {ex}");
             }
             UpdateScreen();
+
         }
 
         

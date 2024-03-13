@@ -7,25 +7,35 @@ using System.Threading.Tasks;
 
 namespace SeaLeopard.System
 {
-    public class Motd : App
+    public class Motd : Command
     {
         public override string Name { get; set; }
+        public override string[] ValidArgs { get; set; }
+        public override string[] Args { get; set; }
+        public override List<string> Errors { get; set ; }
 
-        public class Instance : App.Instance
+        public class Instance : Command.Instance
         {
-            public override App Create(object[] args)
+            public override Command Create(string[] args = null)
             {
-                return new Motd(args[0].ToString());
+                try
+                {
+                    args = args[1..];
+                }
+                catch (Exception e)
+                {
+
+                }
+                return new Motd(args);
             }
         }
-        public Motd(string name)
+        public Motd(string[] args = null)
         {
-            Name = name;
+            Name = "Motd";
         }
-        public override void Start()
+
+        public override int Run()
         {
-            SeaLeopardManager.appManager.ChangeApp(SeaLeopardManager.terminal.Name);
-            SeaLeopardManager.terminal.InputMode = false;
             SeaLeopardManager.terminal.Write("Welcome to SeaLeopard");
             SeaLeopardManager.terminal.Write($"-------------------------------------------");
             SeaLeopardManager.terminal.Write($"Time: {DateTime.Now.ToShortTimeString()}");
@@ -33,14 +43,7 @@ namespace SeaLeopard.System
             SeaLeopardManager.terminal.Write($"Attached drives: ");
             SeaLeopardManager.terminal.Write($"IP: ");
             SeaLeopardManager.terminal.Write($"User: ");
-            SeaLeopardManager.terminal.InputMode = true;
-            
-            SeaLeopardManager.appManager.StopApp(Name);
-        }
-
-        public override void Update()
-        {
-            SeaLeopardManager.terminal.Update();
+            return 0;
         }
     }
 }

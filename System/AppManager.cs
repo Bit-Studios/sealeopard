@@ -8,7 +8,7 @@ namespace SeaLeopard.System
     {
         public abstract class Instance
         {
-            public abstract App Create(object[] args);
+            public abstract App Create(string[] args);
         }
         public abstract void Start();
         public abstract void Update();
@@ -32,17 +32,16 @@ namespace SeaLeopard.System
             apps = new Dictionary<string, App>();
             AppList = new Dictionary<string, App.Instance>();
             AppList.Add("Terminal", new Terminal.Instance());
-            AppList.Add("Motd", new Motd.Instance());
 
             CurrentApp = 0;
-            StartApp("Terminal", new object[] { "SLT" }, "SLT");
+            StartApp("Terminal", new string[] { "SLT" }, "SLT");
         }
         public App StartApp(App AppInstance, string name)
         {
             apps.Add(name, AppInstance);
             return AppInstance;
         }
-        public App StartApp(string AppName, object[] args, string name)
+        public App StartApp(string AppName, string[] args, string name)
         {
             if (AppList.ContainsKey(AppName))
             {
@@ -55,7 +54,15 @@ namespace SeaLeopard.System
         }
         public void Update()
         {
-            apps.ToList()[CurrentApp].Value.Update();
+            try
+            {
+                apps.ToList()[CurrentApp].Value.Update();
+            }
+            catch (Exception e)
+            {
+                SeaLeopardManager.terminal.Write($"{e}");
+            }
+            
         }
         public App GetApp(string AppName)
         {
@@ -70,6 +77,7 @@ namespace SeaLeopard.System
             }
             catch (Exception ex)
             {
+                SeaLeopardManager.terminal.Write($"Error: {ex}");
                 return -1;
             }
 
