@@ -1,5 +1,7 @@
-﻿using SeaLeopard.System;
+﻿using Cosmos.System.Graphics;
+using SeaLeopard.System;
 using System;
+using System.Net.Http.Headers;
 using Sys = Cosmos.System;
 
 
@@ -18,8 +20,8 @@ namespace SeaLeopard
         {
             SeaLeopardManager.appManager = new AppManager();
             Console.WriteLine("Loading SeaLeopard");
-            SeaLeopardManager.terminal = (Terminal)appManager.GetApp("SeaLeopard Terminal");
-            terminal.Write("Welcome to SeaLeopard");
+            SeaLeopardManager.terminal = (Terminal)appManager.GetApp("SLT");
+            appManager.StartApp("Motd", new object[] { "SLmotd" }, "SLmotd");
         }
 
         protected override void Run()

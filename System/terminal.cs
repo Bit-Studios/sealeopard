@@ -18,7 +18,7 @@ namespace SeaLeopard.System
         public bool InputMode = true;
         public List<string> Lines { get; set; }
         public List<string> History { get; set; }
-        public string Name {  get; set; }
+        public override string Name {  get; set; }
         public int historyidx = -1;
         public Terminal(string name) { 
             Name = name;
@@ -31,7 +31,7 @@ namespace SeaLeopard.System
         public void UpdateScreen()
         {
             Console.Clear();
-            List<string> lines = Lines.Skip(Math.Max(0, Lines.Count() - 10)).ToList();
+            List<string> lines = Lines.Skip(Math.Max(0, Lines.Count() - 24)).ToList();
             lines.ForEach(line => Console.WriteLine(line));
             if (InputMode)
             {
@@ -97,6 +97,7 @@ namespace SeaLeopard.System
         public override void Update()
         {
             string input = Read();
+            Write($" > {input}");
             History.Add(input);
             string[] Args = input.Split(' ');
             switch (Args[0].ToLower())
@@ -122,10 +123,12 @@ namespace SeaLeopard.System
                         {
                             case "List":
                                 int idx = 0;
+                                Write($"Currently running processes");
+                                Write($"Process Name | App Name");
                                 SeaLeopardManager.appManager.apps.ToList().ForEach(app =>
                                 {
-                                    Write($"{app.Key} {app.Value.GetType().Name}");
-                                    if(idx > 6)
+                                    Write($"{app.Key} | {app.Value.GetType().Name}");
+                                    if(idx > 23)
                                     {
                                         InputMode = false;
                                         Read("======== Press enter for more ========");
@@ -134,13 +137,7 @@ namespace SeaLeopard.System
                                 });
                                 break;
                             case "Stop":
-                                if(SeaLeopardManager.appManager.CurrentApp == SeaLeopardManager.appManager.apps.Count - 1)
-                                {
-                                    SeaLeopardManager.appManager.CurrentApp = 0;
-                                }
-                                SeaLeopardManager.appManager.apps.Remove(Args[2]);
-                                Write($"Stopped process {Args[2]}");
-                                
+                                SeaLeopardManager.appManager.StopApp(Args[2]);
                                 break;
                             default:
 
