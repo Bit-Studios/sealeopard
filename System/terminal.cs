@@ -134,11 +134,6 @@ namespace SeaLeopard.System
             
         }
 
-
-
-
-
-
         public override void Update()
         {
             try
@@ -163,8 +158,6 @@ namespace SeaLeopard.System
                     else
                     {
                         command.Run();
-                        SeaLeopardManager.terminal.Write($"Debug: ran command");
-                        UpdateScreen();
                     }
                     
                 }
