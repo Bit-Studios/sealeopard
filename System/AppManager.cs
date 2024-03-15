@@ -12,7 +12,7 @@ namespace SeaLeopard.System
         }
         public abstract void Start();
         public abstract void Update();
-
+        public abstract void OnChange();
         public void Dispose()
         {
             
@@ -73,6 +73,7 @@ namespace SeaLeopard.System
             try
             {
                 CurrentApp = apps.ToList().FindIndex(app => app.Key == AppName);
+                apps.ToList()[CurrentApp].Value.OnChange();
                 return CurrentApp;
             }
             catch (Exception ex)
@@ -83,14 +84,21 @@ namespace SeaLeopard.System
 
 
         }
-        public void StopApp(string appname, bool Silent = false)
+        public void StopApp(string appname, bool Silent = false, bool Force = false)
         {
             if (CurrentApp == apps.Count - 1)
             {
                 CurrentApp = 0;
             }
-            apps[appname].Dispose();
-            apps.Remove(appname);
+            if(appname == apps.ToList()[CurrentApp].Key)
+            {
+                CurrentApp = 0;
+            }
+            if (appname != apps.ToList()[0].Key || Force == true)
+            {
+                apps[appname].Dispose();
+                apps.Remove(appname);
+            }
             if (!Silent)
             {
                 SeaLeopardManager.terminal.Write($"Stopped process {appname}");

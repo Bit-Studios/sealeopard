@@ -22,7 +22,8 @@ namespace SeaLeopard.System.Commands
                     case "start":
                         try
                         {
-                            App StartApp = SeaLeopardManager.appManager.StartApp(Args[1], Args[2..], Args[2]);
+                            App StartApp = SeaLeopardManager.appManager.StartApp(Args[1],new string[] { Args[2] }, Args[2]);
+                            SeaLeopardManager.appManager.ChangeApp(Args[2]);
                             if (StartApp == null)
                             {
                                 SeaLeopardManager.terminal.Write($"Invalid App {Args[1]}");
@@ -30,7 +31,7 @@ namespace SeaLeopard.System.Commands
                         }
                         catch (Exception e)
                         {
-                            SeaLeopardManager.terminal.Write($"Invalid Arguments {Args} \nStart <App> <Name (unique)>\nExample: Start Terminal Example_Terminal");
+                            SeaLeopardManager.terminal.Write($"Invalid Arguments {Args} \nProcess Start <App> <Name (unique)>\nExample: Process Start Terminal Example_Terminal");
                         }
                         break;
                     case "list":
@@ -42,35 +43,63 @@ namespace SeaLeopard.System.Commands
                             SeaLeopardManager.appManager.apps.ToList().ForEach(app =>
                             {
                                 SeaLeopardManager.terminal.Write($"{app.Key} | {app.Value.GetType().Name}");
-                                if (idx > 23)
+                                if (idx > 21)
                                 {
                                     SeaLeopardManager.terminal.InputMode = false;
-                                    SeaLeopardManager.terminal.Read("======== Press enter for more ========");
+                                    SeaLeopardManager.terminal.Write("======== Press enter for more ========");
+                                    SeaLeopardManager.terminal.Read();
                                 }
                                 SeaLeopardManager.terminal.InputMode = true;
                             });
                         }
                         catch (Exception e)
                         {
-                            SeaLeopardManager.terminal.Write($"Invalid Arguments {Args}");
+                            SeaLeopardManager.terminal.Write($"Invalid Arguments {Args} \nProcess List");
                             SeaLeopardManager.terminal.UpdateScreen();
                         }
                         break;
                     case "stop":
                         try
                         {
-                            SeaLeopardManager.appManager.StopApp(Args[1]);
+                            if(Args.Length > 1)
+                            {
+                                if(bool.TryParse(Args[2], out bool argb))
+                                {
+                                    SeaLeopardManager.appManager.StopApp(Args[1], Force: argb);
+                                }
+                                else
+                                {
+                                    SeaLeopardManager.terminal.Write($"Invalid Arguments {Args} \nProcess Stop <Process Name> ?<force (true | false)>");
+                                    SeaLeopardManager.terminal.UpdateScreen();
+                                }
+                            }
+                            else
+                            {
+                                SeaLeopardManager.appManager.StopApp(Args[1]);
+                            }
                         }
                         catch (Exception e)
                         {
-                            SeaLeopardManager.terminal.Write($"Invalid Arguments {Args}");
+                            SeaLeopardManager.terminal.Write($"Invalid Arguments {Args} \nProcess Stop <Process Name>");
                             SeaLeopardManager.terminal.UpdateScreen();
                         }
                         
                         break;
+                    case "set":
+                        try
+                        {
+                            SeaLeopardManager.appManager.ChangeApp(Args[1]);
+                        }
+                        catch (Exception e)
+                        {
+                            SeaLeopardManager.terminal.Write($"Invalid Arguments {Args} \nProcess Set <Process Name>");
+                            SeaLeopardManager.terminal.UpdateScreen();
+                        }
+
+                        break;
 
                     default:
-                        SeaLeopardManager.terminal.Write($"Invalid Args {Args}");
+                        SeaLeopardManager.terminal.Write($"Invalid Args {Args} how did you even get this???");
                         SeaLeopardManager.terminal.UpdateScreen();
                         break;
                 }
@@ -113,7 +142,8 @@ namespace SeaLeopard.System.Commands
                 ValidArgs = new string[] {
                 "start",
                 "stop",
-                "list"
+                "list",
+                "set"
                     };
                 if(args.Length > 0)
                 {
